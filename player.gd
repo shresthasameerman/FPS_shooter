@@ -6,6 +6,10 @@ extends CharacterBody3D
 @export var TILT_LOWER_LIMIT := deg_to_rad(-90.0)
 @export var TILT_UPPER_LIMIT := deg_to_rad(90.0)
 @export var CAMERA_CONTROLLER : Camera3D
+@export var animation_player: AnimationPlayer
+@export_range(5,10,0.1) var CROUCH_SPEED: float = 7.0
+@export var CROUCH_SHAPECAST: Node
+
 
 var _mouse_input : bool = false
 var _rotation_input : float
@@ -29,6 +33,8 @@ func _input(event):
 	if event.is_action_pressed("exit"):
 		get_tree().quit()
 		
+	if event.is_action_pressed("crouch"):
+		toggle_crouch()
 func _update_camera(delta):
 	
 	# Rotates camera using euler rotation
@@ -51,6 +57,7 @@ func _ready():
 
 	# Get mouse input
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	CROUCH_SHAPECAST.add_exception($".")
 
 func _physics_process(delta):
 	
@@ -81,7 +88,9 @@ func _physics_process(delta):
 	move_and_slide()
 	
 func toggle_crouch():
-	if _is_crouching == true:
+	if _is_crouching == true and CROUCH_SHAPECAST.is_colliding()==false:
 		print("UNCROUCH")
+		animation_player.play("crouch",-1,-CROUCH_SPEED,true)
 	elif _is_crouching == false:
-		print("CROUCH")
+		animation_player.play("crouch",-1,CROUCH_SPEED)
+	_is_crouching = !_is_crouching
